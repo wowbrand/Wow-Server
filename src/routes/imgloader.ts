@@ -5,6 +5,6 @@ import { awsUpload } from "../middlewares/multer";
 
 const router = express.Router();
 
-router.put("/", awsUpload.single("file"), tempPost);
+router.put("/", awsUpload.array("files"), tempPost);
 
 export default router;

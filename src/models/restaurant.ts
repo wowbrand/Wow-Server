@@ -29,6 +29,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  restaurantImage2: {
+    type: String,
+    required: false,
+  },
+  restaurantImage3: {
+    type: String,
+    required: false,
+  },
+  restaurantImage4: {
+    type: String,
+    required: false,
+  },
 });
 
 const Restaurant = mongoose.model("Restaurant", userSchema);

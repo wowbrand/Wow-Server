@@ -30,6 +30,9 @@ type Restaurant {
     restaurantdescription: String!
     restaurantdescriptionshort: String!
     restaurantMainImage: String
+    restaurantImage2: String
+    restaurantImage3: String
+    restaurantImage4: String
 }
 
 type RestaurantArr {
@@ -56,6 +59,9 @@ input RestaurantInputData {
     restaurantdescription: String!
     restaurantdescriptionshort: String!
     restaurantMainImage: String
+    restaurantImage2: String
+    restaurantImage3: String
+    restaurantImage4: String
 }
 
 type RootMutation {

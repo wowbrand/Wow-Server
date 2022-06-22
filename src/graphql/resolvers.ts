@@ -72,6 +72,7 @@ const createRestaurant = async function ({ restaurantInput }: any, req: any) {
     const errors = new Error("restaurant exist already!");
     throw errors;
   }
+  console.log(restaurantInput);
 
   const restaurant = new Restaurant({
     restaurantname: restaurantInput.restaurantname,
@@ -82,6 +83,9 @@ const createRestaurant = async function ({ restaurantInput }: any, req: any) {
     restaurantdescription: restaurantInput.restaurantdescription,
     restaurantdescriptionshort: restaurantInput.restaurantdescriptionshort,
     restaurantMainImage: restaurantInput.restaurantMainImage,
+    restaurantImage2: restaurantInput.restaurantImage2,
+    restaurantImage3: restaurantInput.restaurantImage3,
+    restaurantImage4: restaurantInput.restaurantImage4,
   });
 
   const createdRestaurant = await restaurant.save();

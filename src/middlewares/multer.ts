@@ -16,7 +16,7 @@ const awsUpload = multer({
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: function (req, file, cb) {
       let ext = path.extname(file.originalname);
-      console.log(ext);
+      console.log(ext, file.originalname);
       cb(null, {
         fieldName: `${file.fieldname}_${Date.now().toString()}.${ext}`,
       });
@@ -24,7 +24,7 @@ const awsUpload = multer({
 
     key: function (req, file, cb) {
       let ext = path.extname(file.originalname);
-      cb(null, `${file.fieldname}_${Date.now().toString()}${ext}`);
+      cb(null, `${file.originalname}_${Date.now().toString()}${ext}`);
     },
   }),
 });
