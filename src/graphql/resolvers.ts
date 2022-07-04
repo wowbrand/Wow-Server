@@ -4,6 +4,8 @@ import validator from "validator";
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import Restaurant from "../models/restaurant";
+import Likes from "../models/likes";
+import Comments from "../models/comments";
 
 const createUser = async function ({ userInput }: any, req: any) {
   const errors = [];
@@ -41,7 +43,7 @@ const createUser = async function ({ userInput }: any, req: any) {
 
 const loginUser = async function ({ email, password }: any) {
   const user = await User.findOne({ email: email });
-  console.log(user);
+  console.log("tvg", user);
   if (!user) {
     const error = new Error("user not found");
     error.code = 401;
@@ -98,7 +100,7 @@ const viewRestaurant = async function ({ restaurantname }: any) {
   if (!restaurantname) {
     console.log("triggered");
     restaurant = await Restaurant.find({});
-    console.log("check", restaurant);
+    console.log("checkxl", restaurant);
   } else {
     restaurant = await Restaurant.find({ restaurantname: restaurantname });
     console.log(restaurant);
@@ -112,11 +114,113 @@ const viewRestaurant = async function ({ restaurantname }: any) {
   return { restaurant: JSON.stringify(restaurant) };
 };
 
+const likeUnlike = async function ({ likeUnlikeInput }: any) {
+  console.log("checkout", likeUnlikeInput.likeId);
+  try {
+    const countDocs = await Likes.countDocuments({
+      likeId: likeUnlikeInput.likeId,
+    });
+    const checkLike = await Likes.findOne({
+      user: likeUnlikeInput.user,
+      likeId: likeUnlikeInput.likeId,
+    });
+    if (checkLike) {
+      const countDocs = await Likes.countDocuments({
+        likeId: likeUnlikeInput.likeId,
+      });
+      const validation = await Likes.deleteOne({
+        user: likeUnlikeInput.user,
+        likeId: likeUnlikeInput.likeId,
+      });
+
+      console.log(validation);
+      return { likedBoolean: "false", likedAmount: countDocs - 1 };
+    } else {
+      const newLike = new Likes({
+        _ID: likeUnlikeInput._ID,
+        user: likeUnlikeInput.user,
+        likeId: likeUnlikeInput.likeId,
+      });
+      try {
+        const savedLike = await newLike.save();
+        return {
+          likedBoolean: "true",
+          likedAmount: countDocs + 1,
+        };
+      } catch (error) {
+        return { error: error };
+      }
+    }
+  } catch (error) {
+    return { error: error };
+  }
+};
+
+const handleComments = async function ({ commentsInput }: any) {
+  //Create Section
+  if (commentsInput.option === "create") {
+    let current = new Date();
+    console.log(current.toString());
+    const comment = new Comments({
+      user: commentsInput.user,
+      comment: commentsInput.comment,
+      restaurantId: commentsInput.restaurantId,
+      serverTimeStamp: current.toString(),
+    });
+    await comment.save();
+  }
+  //end of create section
+  //modify section
+  if (commentsInput.option === "edit") {
+    const restaurantComment = await Comments.findById({
+      _id: commentsInput._id,
+    });
+    restaurantComment.comment = commentsInput.comment;
+    await restaurantComment.save();
+  }
+  //end of modify section
+  //delete section
+  if (commentsInput.option === "delete") {
+    await Comments.deleteOne({
+      _id: commentsInput._id,
+    });
+  }
+  //end of delete section
+};
+
+const viewComments = async function ({ user, restaurantId }) {
+  let viewCommentlist: any;
+  console.log(user, restaurantId);
+  if (!user && !restaurantId) {
+    viewCommentlist = await Comments.find({});
+    console.log("check", viewCommentlist);
+  } else if (user && restaurantId) {
+    viewCommentlist = await Comments.find({
+      user: user,
+      restaurantId: restaurantId,
+    });
+  } else if (user) {
+    viewCommentlist = await Comments.find({
+      user: user,
+    });
+    console.log("test");
+  } else {
+    viewCommentlist = await Comments.find({
+      restaurantId: restaurantId,
+    });
+  }
+  //console.log("viewCommentlist", viewCommentlist);
+  return { user: JSON.stringify(viewCommentlist) };
+};
+
 const graphqlResolver = {
   login: loginUser,
   createUser: createUser,
   createRestaurant: createRestaurant,
   viewRestaurant: viewRestaurant,
+  createlikeUnlike: likeUnlike,
+  createComments: handleComments,
+  viewComments: viewComments,
 };
 
 export { graphqlResolver };

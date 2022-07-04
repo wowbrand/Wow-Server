@@ -39,9 +39,23 @@ type RestaurantArr {
     restaurant: String
 }
 
+type likeUnlikeOutput {
+    _id: ID
+    likedAmount: String!
+    likedBoolean: String!
+}
+
 type AuthData {
     token: String!
     userId: String!
+}
+
+type commentOutput {
+    user: String
+    comment: String
+    restaurantId: String
+    _id: ID
+    serverTimeStamp: String
 }
 
 input UserInputData {
@@ -64,14 +78,35 @@ input RestaurantInputData {
     restaurantImage4: String
 }
 
+input likeUnlikeInputData {
+    likeId: String!
+    user: String!
+}
+input commentsInputData {
+    user: String
+    comment: String
+    option: String 
+    restaurantId: String
+    _id: ID
+}
+
+
+
 type RootMutation {
     createUser(userInput: UserInputData): User!
     createRestaurant(restaurantInput: RestaurantInputData): Restaurant!
+    createlikeUnlike(likeUnlikeInput: likeUnlikeInputData): likeUnlikeOutput!
+    createComments(commentsInput: commentsInputData): commentOutput
+    
 }
+
+
 
 type rootQuery{
         login(email: String!, password:String!): AuthData!
         viewRestaurant(restaurantname: String ): RestaurantArr
+        likesCheck(restaurantId: String, name: String): likeUnlikeOutput
+        viewComments(user: String, restaurantId: String): commentOutput
     }
 
 schema {
