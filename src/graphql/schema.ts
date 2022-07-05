@@ -41,8 +41,8 @@ type RestaurantArr {
 
 type likeUnlikeOutput {
     _id: ID
-    likedAmount: String!
-    likedBoolean: String!
+    likedAmount: String
+    likedBoolean: String
 }
 
 type AuthData {
@@ -105,7 +105,7 @@ type RootMutation {
 type rootQuery{
         login(email: String!, password:String!): AuthData!
         viewRestaurant(restaurantname: String ): RestaurantArr
-        likesCheck(restaurantId: String, name: String): likeUnlikeOutput
+        likesCheck(restaurantId: String, user: String): likeUnlikeOutput
         viewComments(user: String, restaurantId: String): commentOutput
     }
 

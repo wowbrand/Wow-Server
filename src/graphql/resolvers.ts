@@ -156,6 +156,29 @@ const likeUnlike = async function ({ likeUnlikeInput }: any) {
   }
 };
 
+const likesCheck = async function ({ restaurantId, user }: any) {
+  console.log("blablatest", restaurantId, user);
+
+  let checkLike: any = "";
+  try {
+    const countDocs = await Likes.countDocuments({
+      likeId: restaurantId,
+    });
+    if (user) {
+      checkLike = await Likes.find({
+        user: user,
+        likeId: restaurantId,
+      });
+    }
+    let likeTrueFalse = false;
+    console.log("blabel", checkLike.length);
+    if (checkLike.length > 0) likeTrueFalse = true;
+    return { likedBoolean: likeTrueFalse, likedAmount: countDocs.toString() };
+  } catch (error) {
+    return { error: error };
+  }
+};
+
 const handleComments = async function ({ commentsInput }: any) {
   //Create Section
   if (commentsInput.option === "create") {
@@ -221,6 +244,7 @@ const graphqlResolver = {
   createlikeUnlike: likeUnlike,
   createComments: handleComments,
   viewComments: viewComments,
+  likesCheck: likesCheck,
 };
 
 export { graphqlResolver };
