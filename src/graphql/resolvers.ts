@@ -2,6 +2,7 @@ import User from "../models/user";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import jwt from "jsonwebtoken";
+import { verify } from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import Restaurant from "../models/restaurant";
 import Likes from "../models/likes";
@@ -61,7 +62,7 @@ const loginUser = async function ({ email, password }: any) {
       email: user.email,
     },
     "process.env.SECRET_JWTyesiknowthisdoesnotworkbutatleastnowitsaveryhardkeytoguessifyoudontbelievemegiveitatrycloseyoureyesthinkofsomethingandifitisexactlythisstringiwillgiveyou2euro50andiwillbuyyouasnickers",
-    { expiresIn: "3h" }
+    { expiresIn: "3d" }
   );
   return { token: token, userId: user._id.toString() };
 };
@@ -117,38 +118,47 @@ const viewRestaurant = async function ({ restaurantname }: any) {
 const likeUnlike = async function ({ likeUnlikeInput }: any) {
   console.log("checkout", likeUnlikeInput.likeId);
   try {
-    const countDocs = await Likes.countDocuments({
-      likeId: likeUnlikeInput.likeId,
-    });
-    const checkLike = await Likes.findOne({
-      user: likeUnlikeInput.user,
-      likeId: likeUnlikeInput.likeId,
-    });
-    if (checkLike) {
+    const thepayload = verify(
+      likeUnlikeInput.token,
+      "process.env.SECRET_JWTyesiknowthisdoesnotworkbutatleastnowitsaveryhardkeytoguessifyoudontbelievemegiveitatrycloseyoureyesthinkofsomethingandifitisexactlythisstringiwillgiveyou2euro50andiwillbuyyouasnickers"
+    );
+    if (!thepayload) {
+      return { error: "Bad user. you are not authenticated" };
+    } else {
       const countDocs = await Likes.countDocuments({
         likeId: likeUnlikeInput.likeId,
       });
-      const validation = await Likes.deleteOne({
-        user: likeUnlikeInput.user,
+      const checkLike = await Likes.findOne({
+        user: thepayload.userId,
         likeId: likeUnlikeInput.likeId,
       });
 
-      console.log(validation);
-      return { likedBoolean: "false", likedAmount: countDocs - 1 };
-    } else {
-      const newLike = new Likes({
-        _ID: likeUnlikeInput._ID,
-        user: likeUnlikeInput.user,
-        likeId: likeUnlikeInput.likeId,
-      });
-      try {
-        const savedLike = await newLike.save();
-        return {
-          likedBoolean: "true",
-          likedAmount: countDocs + 1,
-        };
-      } catch (error) {
-        return { error: error };
+      if (checkLike) {
+        const countDocs = await Likes.countDocuments({
+          likeId: likeUnlikeInput.likeId,
+        });
+        const validation = await Likes.deleteOne({
+          user: thepayload.userId,
+          likeId: likeUnlikeInput.likeId,
+        });
+
+        console.log(validation);
+        return { likedBoolean: "false", likedAmount: countDocs - 1 };
+      } else {
+        const newLike = new Likes({
+          _ID: likeUnlikeInput._ID,
+          user: thepayload.userId,
+          likeId: likeUnlikeInput.likeId,
+        });
+        try {
+          const savedLike = await newLike.save();
+          return {
+            likedBoolean: "true",
+            likedAmount: countDocs + 1,
+          };
+        } catch (error) {
+          return { error: error };
+        }
       }
     }
   } catch (error) {
@@ -156,37 +166,52 @@ const likeUnlike = async function ({ likeUnlikeInput }: any) {
   }
 };
 
-const likesCheck = async function ({ restaurantId, user }: any) {
+const likesCheck = async function ({ restaurantId, user, token }: any) {
   console.log("blablatest", restaurantId, user);
-
-  let checkLike: any = "";
-  try {
-    const countDocs = await Likes.countDocuments({
-      likeId: restaurantId,
-    });
-    if (user) {
-      checkLike = await Likes.find({
-        user: user,
+  const thepayload = verify(
+    token,
+    "process.env.SECRET_JWTyesiknowthisdoesnotworkbutatleastnowitsaveryhardkeytoguessifyoudontbelievemegiveitatrycloseyoureyesthinkofsomethingandifitisexactlythisstringiwillgiveyou2euro50andiwillbuyyouasnickers"
+  );
+  if (!thepayload) {
+    return { error: "Bad user. you are not authenticated" };
+  } else {
+    let checkLike: any = "";
+    try {
+      const countDocs = await Likes.countDocuments({
         likeId: restaurantId,
       });
+      if (thepayload.userId) {
+        checkLike = await Likes.find({
+          user: thepayload.userId,
+          likeId: restaurantId,
+        });
+      }
+      let likeTrueFalse = false;
+      console.log("blabel", checkLike.length);
+      if (checkLike.length > 0) likeTrueFalse = true;
+      return { likedBoolean: likeTrueFalse, likedAmount: countDocs.toString() };
+    } catch (error) {
+      return { error: error };
     }
-    let likeTrueFalse = false;
-    console.log("blabel", checkLike.length);
-    if (checkLike.length > 0) likeTrueFalse = true;
-    return { likedBoolean: likeTrueFalse, likedAmount: countDocs.toString() };
-  } catch (error) {
-    return { error: error };
   }
 };
 
 const handleComments = async function ({ commentsInput }: any) {
-  if (commentsInput.token) console.log(commentsInput.token);
-  //Create Section
-  if (commentsInput.option === "create") {
+  const thepayload = verify(
+    commentsInput.token,
+    "process.env.SECRET_JWTyesiknowthisdoesnotworkbutatleastnowitsaveryhardkeytoguessifyoudontbelievemegiveitatrycloseyoureyesthinkofsomethingandifitisexactlythisstringiwillgiveyou2euro50andiwillbuyyouasnickers"
+  );
+  console.log(thepayload.userId);
+  let user = await User.findById({ _id: thepayload.userId });
+  if (!thepayload) {
+    return { error: "Bad user. you are not authenticated" };
+  } else if (commentsInput.option === "create") {
+    //Create Section
     let current = new Date();
     console.log(current.toString());
     const comment = new Comments({
-      user: commentsInput.user,
+      user: user.name,
+      userId: thepayload.userId,
       comment: commentsInput.comment,
       restaurantId: commentsInput.restaurantId,
       serverTimeStamp: current.toString(),

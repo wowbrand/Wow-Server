@@ -10,6 +10,8 @@ import { graphqlHTTP } from "express-graphql";
 import graphqlSchema from "./graphql/schema";
 import { graphqlResolver } from "./graphql/resolvers";
 import imguploadLoader from "./routes/imgloader";
+import passport from "passport";
+import { Jwt } from "jsonwebtoken";
 
 import { awsUpload } from "./middlewares/multer";
 console.log("graphqlResolver", graphqlResolver);
@@ -21,6 +23,7 @@ dotenv.config();
 // Connect to mongoose
 // Problems to solve: type is any, dotenv is not a string? what type is it?
 const mongooseLogin: any = process.env.MONGO_URI;
+const jwtAuth = passport.authenticate("jwt", { session: false });
 
 const DataBaseConnect = async () => {
   try {

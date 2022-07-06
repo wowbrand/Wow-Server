@@ -6,6 +6,11 @@ const userSchema = new mongoose.Schema({
     required: false,
     unique: false,
   },
+  userId: {
+    type: String,
+    required: false,
+    unique: false,
+  },
   comment: {
     type: String,
     required: false,
