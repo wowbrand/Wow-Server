@@ -180,6 +180,7 @@ const likesCheck = async function ({ restaurantId, user }: any) {
 };
 
 const handleComments = async function ({ commentsInput }: any) {
+  if (commentsInput.token) console.log(commentsInput.token);
   //Create Section
   if (commentsInput.option === "create") {
     let current = new Date();

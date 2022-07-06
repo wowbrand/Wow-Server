@@ -88,6 +88,7 @@ input commentsInputData {
     option: String 
     restaurantId: String
     _id: ID
+    token: String
 }
 
 
