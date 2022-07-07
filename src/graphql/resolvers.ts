@@ -166,6 +166,39 @@ const likeUnlike = async function ({ likeUnlikeInput }: any) {
   }
 };
 
+const profileReceive = async function ({ token }: any) {
+  console.log("token", token);
+  const thepayload = verify(
+    token,
+    "process.env.SECRET_JWTyesiknowthisdoesnotworkbutatleastnowitsaveryhardkeytoguessifyoudontbelievemegiveitatrycloseyoureyesthinkofsomethingandifitisexactlythisstringiwillgiveyou2euro50andiwillbuyyouasnickers"
+  );
+  console.log(thepayload);
+
+  if (!thepayload) {
+    return { error: "No, you are not a registered user" };
+  } else {
+    const userLikes = await Likes.find({
+      user: thepayload.userId,
+    });
+    const userComments = await Comments.find({
+      userId: thepayload.userId,
+    });
+
+    const user = await User.find({
+      _id: thepayload.userId,
+    });
+    const userArr = user[0];
+    console.log(userArr);
+    return {
+      userId: thepayload.userId,
+      userName: user[0].name,
+      email: thepayload.email,
+      comments: JSON.stringify(userComments),
+      likes: JSON.stringify(userLikes),
+    };
+  }
+};
+
 const likesCheck = async function ({ restaurantId, user, token }: any) {
   console.log("blablatest", restaurantId, user);
   const thepayload = verify(
@@ -223,6 +256,7 @@ const handleComments = async function ({ commentsInput }: any) {
   if (commentsInput.option === "edit") {
     const restaurantComment = await Comments.findById({
       _id: commentsInput._id,
+      user: user.name,
     });
     restaurantComment.comment = commentsInput.comment;
     await restaurantComment.save();
@@ -232,12 +266,13 @@ const handleComments = async function ({ commentsInput }: any) {
   if (commentsInput.option === "delete") {
     await Comments.deleteOne({
       _id: commentsInput._id,
+      user: user.name,
     });
   }
   //end of delete section
 };
 
-const viewComments = async function ({ user, restaurantId }) {
+const viewComments = async function ({ user, restaurantId }: any) {
   let viewCommentlist: any;
   console.log(user, restaurantId);
   if (!user && !restaurantId) {
@@ -271,6 +306,7 @@ const graphqlResolver = {
   createComments: handleComments,
   viewComments: viewComments,
   likesCheck: likesCheck,
+  profileReceive: profileReceive,
 };
 
 export { graphqlResolver };

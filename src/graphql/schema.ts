@@ -92,6 +92,14 @@ input commentsInputData {
     token: String
 }
 
+type profileOutput {
+    userId: String
+    email: String
+    comments: String
+    likes: String
+    userName: String
+}
+
 
 
 type RootMutation {
@@ -109,6 +117,7 @@ type rootQuery{
         viewRestaurant(restaurantname: String ): RestaurantArr
         likesCheck(restaurantId: String, user: String, token: String): likeUnlikeOutput
         viewComments(user: String, restaurantId: String): commentOutput
+        profileReceive(token: String!): profileOutput
     }
 
 schema {
